@@ -1,4 +1,4 @@
-# AutoDomainHijack
+# AutoAppDomainHijack
 Tools to automate finding AppDomain hijacks and generating payloads from shellcode.
 
 ## HijackHunt
