@@ -19,7 +19,7 @@ let spec = (
     outputDirectory: newDirArg(@["-o", "--output"], required=true, help="Full directory to write files to."),
     disableEtw: newBoolArg(@["-e", "--etw"], defaultVal=true, help="Disable ETW."),
     # --version will cause 0.1.0 to be printed
-    version: newMessageArg(@["--version"], "0.1.0", help="Prints version"),
+    version: newMessageArg(@["--version"], "1.0.0", help="Prints version"),
     # --help will cause a help message to be printed
     help: newHelpArg(@["-h", "--help"], help="Show help message"),
 )
