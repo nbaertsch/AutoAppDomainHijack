@@ -1,0 +1,11 @@
+nimcache/
+nimblecache/
+htmldocs/
+
+bin/
+tmp/
+bin/*
+tmp/*
+*.exe
+
+testresults/
