@@ -13,6 +13,6 @@ bin           = @["AutoDomainHijack, HijackHunt"]
 requires "nim >= 2.0.0"
 requires "winim >= 3.9.2"
 requires "mustache"
-requires "therapist"
+requires "https://bitbucket.org/maxgrenderjones/therapist.git#head"
 requires "nimcrypto"
 requires "regex"
