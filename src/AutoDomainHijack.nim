@@ -145,9 +145,9 @@ when isMainModule:
         c["managerAssemblyFullName"] = result.output.replace("\n", "")
         c["managerType"] = hijackName
         if spec.disableEtw.value:
-            c["etwEnabled"] = "true"
-        else:
             c["etwEnabled"] = "false"
+        else:
+            c["etwEnabled"] = "true"
 
         fConfig.write("{{ >config }}".render(c))
         fConfig.close()
