@@ -18,7 +18,7 @@ Options:
   -u, --url=<url>                  URL of the remote shellcode to run.
   -f, --file=<file>                File containing the shellcode to embed.
   -o, --output=<output>            Full directory to write files to.
-  -e, --etw=<etw>                  Disable ETW. [default: true]
+  -e, --etw=<etw>                  Enable ETW. [default: true]
       --version                    Prints version
   -h, --help                       Show help message
 ```
