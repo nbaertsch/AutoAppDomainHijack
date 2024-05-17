@@ -1,5 +1,5 @@
 #[
-    Main binary for automation of AppDomain hijack payloads.
+    Main binary for automation of AppDomain hijack payloads. For insight on this technique, see: https://attack.mitre.org/techniques/T1574/014/
 ]#
 
 # Importing necessary modules from the standard library and external libraries.
