@@ -9,7 +9,6 @@ import strutils
 
 export base64
 
-import winim/clr
 import nimcrypto
 
 var
