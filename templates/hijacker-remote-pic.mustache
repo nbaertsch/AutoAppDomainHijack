@@ -9,7 +9,7 @@ using System.Text;
 public sealed class {{ managerType }} :  AppDomainManager
 {
 
-    public override void InitializeNewDomain(AppDomainSetup appDomaininfo)
+    public {{ managerType }}()
     {
         var t = Task.Run(() =>
             {{class_Helper}}.{{func_Run}}()
