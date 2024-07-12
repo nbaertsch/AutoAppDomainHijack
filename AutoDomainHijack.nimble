@@ -1,11 +1,11 @@
 # Package
-version       = "1.0.0"
-author        = "nbaertsch"
-description   = "Automated .NET AppDomain hijack payload generation"
-license       = "GPL-3.0"
-srcDir        = "src"
-binDir        = "bin"
-bin           = @["AutoDomainHijack, HijackHunt"]
+version = "1.0.0"
+author = "nbaertsch"
+description = "Automated .NET AppDomain hijack payload generation"
+license = "GPL-3.0"
+srcDir = "src"
+binDir = "bin"
+bin = @["AutoDomainHijack, HijackHunt"]
 
 
 # Dependencies
