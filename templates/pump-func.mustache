@@ -1,0 +1,31 @@
+{
+    // Estimated size: ~10KB of machine code
+    // Using large arrays and nested loops to generate more instructions
+    int[] array1 = new int[1000];
+    int[] array2 = new int[1000];
+    double[] results = new double[1000];
+
+    // Multiple nested loops force more instruction generation
+    for (int i = 0; i < 100; i++) {
+        for (int j = 0; j < 100; j++) {
+            array1[i*10 + j] = i * j;
+            array2[i*10 + j] = i + j;
+            
+            // Math operations generate significant instruction counts
+            results[i*10 + j] = Math.Pow(Math.Sin(array1[i*10 + j]), 2) + 
+                                Math.Pow(Math.Cos(array2[i*10 + j]), 2) +
+                                Math.Sqrt(Math.Abs(array1[i*10 + j] * array2[i*10 + j]));
+            
+            // String operations also generate many instructions
+            string s1 = array1[i*10 + j].ToString("X8");
+            string s2 = array2[i*10 + j].ToString("X8");
+            string s3 = results[i*10 + j].ToString("F8");
+            
+            // More math to ensure the compiler can't optimize it away
+            if (results[i*10 + j] > 0.5) {
+                array1[i*10 + j] = (int)(results[i*10 + j] * 1000);
+                array2[i*10 + j] = (int)(results[i*10 + j] * 2000);
+            }
+        }
+    }
+}

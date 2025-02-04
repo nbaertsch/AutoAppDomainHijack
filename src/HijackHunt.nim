@@ -12,7 +12,12 @@ proc readFileBytes(fullName: string): seq[byte] =
 
 proc isManagedPe(filePath: string): bool =
     var fileBytes: seq[byte]
-    fileBytes = readFileBytes(filePath)
+
+    try:
+        fileBytes = readFileBytes(filePath)
+    except:
+        return false
+
 
     if fileBytes.len() == 0: return false
 
@@ -72,8 +77,14 @@ proc isWritable(dir: string): bool =
 
 
 when isMainModule:
-    for entry in walkDirRec(r"C:\"):
+    if paramCount() != 1:
+        echo "Usage: HijackHunt <directory>"
+        quit(1)
+    
+    let searchDir = paramStr(1)
+    for entry in walkDirRec(searchDir):
         var p = r"^(.*)\.exe$"
+
         if entry.match(re2(p)): # this is perl-style regex
             if entry.isManagedPe():
                 var (path, name, ext) = entry.splitFile()
